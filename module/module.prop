@@ -1,0 +1,6 @@
+id=hosts_studio
+name=Hosts Studio · Hosts 编辑器
+version=v1.0.0
+versionCode=10000
+author=Hosts Studio
+description=离线中文 hosts 编辑器：系统无损覆盖、备份与恢复；保存后重启生效。面向官方 KernelSU 3.0+，无需额外挂载模块。

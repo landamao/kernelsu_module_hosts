@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- KernelSU's trusted native bridge delivers callbacks via javascript: URLs; unsafe-inline is required for those callbacks, not application scripts. No eval, remote resources or inline styles. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self'; connect-src 'none'; img-src 'self' data:; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; worker-src 'none'; media-src 'none'">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0b1519">
+  <meta name="referrer" content="no-referrer">
+  <title>Hosts Studio · 本地 Hosts 编辑器</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#hosts-input">跳到 Hosts 编辑区</a>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">H<span>.</span></span>
+        <div>
+          <h1>Hosts Studio</h1>
+          <p class="brand-subtitle">KERNELSU · 本地 HOSTS 编辑器</p>
+        </div>
+      </div>
+      <span class="local-badge"><span class="local-dot" aria-hidden="true"></span>离线工具</span>
+    </header>
+
+    <main id="main-content">
+      <section class="intro" aria-labelledby="intro-title">
+        <div>
+          <p class="eyebrow"><span aria-hidden="true">01 / </span>LOCAL FIRST</p>
+          <h2 id="intro-title">让域名，去你指定的地方。</h2>
+          <p class="intro-copy">编辑本地规则，保存后于下次重启加载。<br class="mobile-break">不即时替换系统文件，不在这里触发重启。</p>
+        </div>
+        <div class="path-chip" aria-label="规则目标路径 /system/etc/hosts"><span aria-hidden="true">/</span> system/etc/hosts</div>
+      </section>
+
+      <aside id="environment-banner" class="environment-banner" data-mode="checking" aria-live="polite" aria-atomic="true">
+        <span class="environment-icon" aria-hidden="true">i</span>
+        <div>
+          <strong id="environment-title">正在检查 KernelSU 环境…</strong>
+          <p id="environment-detail">连接确认前不会读取或更改设备文件。</p>
+        </div>
+      </aside>
+      <noscript><p class="noscript-message">脚本未运行，所有设备操作均已禁用。请在支持 JavaScript 的 KernelSU 管理器中打开。</p></noscript>
+
+      <section class="status-grid" aria-label="保存、挂载、重启和容量状态">
+        <article class="status-card" id="saved-card" data-tone="neutral">
+          <div class="card-label"><span class="status-dot" aria-hidden="true"></span>保存状态</div>
+          <p class="card-value" id="saved-value">尚未读取</p>
+          <p class="card-detail" id="saved-detail">连接后读取模块配置</p>
+        </article>
+        <article class="status-card" id="active-card" data-tone="neutral">
+          <div class="card-label"><span class="status-dot" aria-hidden="true"></span>本次启动</div>
+          <p class="card-value" id="active-value">尚未确认</p>
+          <p class="card-detail" id="active-detail">不代表全部应用使用此规则</p>
+        </article>
+        <article class="status-card" id="reboot-card" data-tone="neutral">
+          <div class="card-label"><span class="status-dot" aria-hidden="true"></span>重启状态</div>
+          <p class="card-value" id="reboot-value">尚未确认</p>
+          <p class="card-detail" id="reboot-detail">保存后于下次重启加载</p>
+        </article>
+        <article class="status-card capacity-card" id="capacity-card" data-tone="neutral">
+          <div class="card-label"><span class="status-dot" aria-hidden="true"></span>编辑区容量 · UTF-8</div>
+          <p class="card-value"><span id="byte-count">0</span><span class="value-unit"> B</span></p>
+          <p class="card-detail" id="character-count">0 字符 · 上限 262,144 字节</p>
+          <progress id="byte-meter" max="262144" value="0" aria-label="UTF-8 字节容量" aria-describedby="size-help">0 / 262144</progress>
+        </article>
+      </section>
+
+      <div class="workspace-grid">
+        <section class="editor-panel" aria-labelledby="editor-title">
+          <header class="panel-header">
+            <div>
+              <p class="eyebrow">YOUR RULES</p>
+              <h2 id="editor-title">Hosts 规则</h2>
+            </div>
+            <span class="edit-state" id="edit-state" data-tone="neutral">等待连接</span>
+          </header>
+          <div class="editor-toolbar">
+            <label for="hosts-input"><span class="file-indicator" aria-hidden="true"></span>hosts<span class="file-type">纯文本</span></label>
+            <button type="button" class="text-button" id="refresh-button" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true" focusable="false"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 7a7 7 0 0 1 11.5-1L20 9M4 15l2.4 3A7 7 0 0 0 18 17"/></svg>
+              <span id="refresh-label">重新读取</span>
+            </button>
+          </div>
+          <div class="textarea-wrap">
+            <textarea id="hosts-input" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" inputmode="text" wrap="off" placeholder="# 格式示例（不是当前设备内容）&#10;127.0.0.1 localhost&#10;::1 localhost&#10;0.0.0.0 example.invalid" aria-describedby="editor-help size-help revision-label" disabled></textarea>
+          </div>
+          <div class="editor-meta">
+            <span id="line-count">0 行</span>
+            <span id="revision-label">修订 · 未读取</span>
+            <span>UTF-8 / LF</span>
+          </div>
+          <div class="editor-bottom">
+            <div class="save-row">
+              <div class="save-note">
+                <span class="note-mark" aria-hidden="true"></span>
+                <p><strong>保存到模块，下次重启加载</strong><span id="save-help">仅写入模块配置，不声称已即时生效。</span></p>
+              </div>
+              <button type="button" class="button primary-button" id="save-button" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true" focusable="false"><path d="M5 3h12l4 4v14H3V3h2Z"/><path d="M7 3v6h10V3M7 21v-8h10v8"/></svg>
+                <span id="save-label">保存规则</span>
+              </button>
+            </div>
+            <p class="size-help" id="size-help" data-tone="neutral">上限 262,144 字节（256 KiB）；中文等字符会占用多个字节。</p>
+          </div>
+          <div class="feedback" id="feedback" data-tone="info" role="status" aria-live="polite" aria-atomic="true">
+            <span class="feedback-symbol" id="feedback-symbol" aria-hidden="true">i</span>
+            <p id="feedback-text">正在等待设备环境确认。你的规则不会发送到网络。</p>
+          </div>
+        </section>
+
+        <aside class="sidebar" aria-label="版本操作与使用说明">
+          <section class="utility-panel" aria-labelledby="versions-title">
+            <div class="section-heading"><h2 id="versions-title">版本与导出</h2><span class="section-index" aria-hidden="true">02</span></div>
+            <p class="section-description">恢复会写入模块配置，也需下次重启。</p>
+            <div class="utility-list">
+              <div class="utility-item">
+                <div><h3>恢复上一版</h3><p id="backup-help">备份状态尚未确认</p></div>
+                <button class="button secondary-button compact-button" type="button" id="restore-backup-button" aria-label="恢复上一版 Hosts 配置" aria-describedby="backup-help" disabled>恢复</button>
+              </div>
+              <div class="utility-item">
+                <div><h3>恢复初始版本</h3><p>使用模块保留的初始 Hosts</p></div>
+                <button class="button secondary-button compact-button" type="button" id="restore-original-button" aria-label="恢复模块初始 Hosts 配置" disabled>恢复</button>
+              </div>
+              <div class="utility-item">
+                <div><h3>导出文本</h3><p>包含编辑区尚未保存的修改</p></div>
+                <button class="button secondary-button compact-button" type="button" id="export-button" aria-label="将编辑区导出为 txt 文件" disabled>导出 .txt</button>
+              </div>
+            </div>
+            <p class="privacy-note">不使用浏览器本地存储。未保存内容仅在当前页面内存中，离开前请保存或导出。</p>
+          </section>
+
+          <section class="guide-panel" aria-labelledby="guide-title">
+            <div class="section-heading"><h2 id="guide-title">写一条规则</h2><span class="section-index" aria-hidden="true">03</span></div>
+            <div class="format-example" aria-label="格式示例，IP 地址、空白、域名"><code><span class="code-address">127.0.0.1</span> <span>localhost</span></code><span class="example-caption">IP 地址<span aria-hidden="true"> → </span>域名 · 用空格或 Tab 分隔</span></div>
+            <p id="editor-help">每行一条映射，支持 <code>#</code> 注释。保持 <code>localhost</code> 等基础条目；不要填写 URL、端口或通配符。最终校验由设备端完成。</p>
+          </section>
+
+          <section class="notice-panel" aria-labelledby="limits-title">
+            <div class="section-heading"><h2 id="limits-title"><span class="notice-icon" aria-hidden="true">!</span>生效范围须知</h2></div>
+            <ul>
+              <li><strong>不是全局 DNS 开关。</strong> 私有 DNS、应用内 DoH 或自带解析器可能绕过系统 Hosts。</li>
+              <li><strong>检查 KernelSU 卸载设置。</strong> “卸载模块 / Umount modules”可能让目标应用看不到模块挂载。</li>
+              <li><strong>缓存不会立即消失。</strong> 系统、浏览器及应用的 DNS 缓存可能继续返回旧结果。</li>
+            </ul>
+            <details class="device-details">
+              <summary>查看模块返回的状态</summary>
+              <dl>
+                <div><dt>配置</dt><dd id="configured-detail">尚未读取</dd></div>
+                <div><dt>已保存容量</dt><dd id="stored-bytes-detail">尚未读取</dd></div>
+                <div><dt>启动标识</dt><dd id="boot-id-detail">尚未读取</dd></div>
+                <div><dt>启动说明</dt><dd id="boot-message-detail">尚未读取</dd></div>
+              </dl>
+              <p>状态是最近一次设备端返回的快照，不是实时 DNS 测试。</p>
+            </details>
+          </section>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="app-footer"><span>HOSTS STUDIO<span class="footer-separator" aria-hidden="true"> / </span>规则留在你的设备</span><span>当前稳定版 Android WebView</span></footer>
+  </div>
+
+  <dialog id="confirm-dialog" class="confirm-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description dialog-warning">
+    <form method="dialog" id="confirm-form">
+      <span class="dialog-eyebrow">请确认此操作</span>
+      <h2 id="dialog-title">确认操作</h2>
+      <p id="dialog-description"></p>
+      <p class="dialog-warning" id="dialog-warning"></p>
+      <div class="dialog-actions">
+        <button type="submit" value="cancel" id="dialog-cancel" class="button secondary-button" autofocus>取消</button>
+        <button type="submit" value="confirm" id="dialog-confirm" class="button danger-button">继续</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>
